@@ -12,8 +12,11 @@ public interface UserRepository extends JpaRepository<User, Long>{
     // @Query("SELECT u from User u where u.id > :id")
     // public List<User> findAllMoreThan(@Param("id") Long id); testando sem palavras reservada
     
-    public List<User> findByIdGreaterThan(Long id);
+    boolean existsByEmail(String email);
 
-    public List<User> findByNameIgnoreCase(String name);
+    
+
+
+
     
 }
