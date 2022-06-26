@@ -1,6 +1,7 @@
 package br.com.springboot.model;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,5 +33,7 @@ public class User implements Serializable{
     private String email;
     @Column(nullable = false, unique = true)
     private String telefone;
+    @Column(nullable = false)
+    private LocalDateTime created_at;
 
 }
