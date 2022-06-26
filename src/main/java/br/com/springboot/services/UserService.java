@@ -3,6 +3,8 @@ package br.com.springboot.services;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
+    @Transactional
     public User save(User user) {
         return userRepository.save(user);
     }
@@ -31,7 +34,8 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public void deleteById(Long id){
-         userRepository.deleteById(id);
+    @Transactional
+    public void delete(User user){
+         userRepository.delete(user);
     }
 }
