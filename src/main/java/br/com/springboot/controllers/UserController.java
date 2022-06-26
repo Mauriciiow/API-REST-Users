@@ -1,5 +1,7 @@
 package br.com.springboot.controllers;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -9,6 +11,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,7 +49,9 @@ public class UserController {
         }
 
         var userModel = new User();
+        
         BeanUtils.copyProperties(user, userModel);
+        userModel.setCreated_at(LocalDateTime.now(ZoneId.of("UTC")));
         
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(userModel));
        
@@ -56,10 +62,10 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findAll());
     }
 
-      @GetMapping("/users/{id}")
-        ResponseEntity<Object> user(@PathVariable("id") Long id){
+    @GetMapping("/users/{id}")
+        ResponseEntity<Object> listOne(@PathVariable("id") Long id){
 
-        var userFind = userService.findById(id);
+         Optional<User> userFind = userService.findById(id);
 
         if (userFind.isPresent()) {
             return ResponseEntity.status(HttpStatus.FOUND).body(userFind.get());
@@ -79,35 +85,42 @@ public class UserController {
     //     return this.userRepository.findByNameIgnoreCase(name);
     // }
 
-    @PatchMapping("/edit_user/{id}")
-    public ResponseEntity<Object> updateUser(@PathVariable("id") Long id, @RequestBody User user) {
+    @PutMapping("/edit_user/{id}")
+    public ResponseEntity<Object> updateUser(@PathVariable("id") Long id, @RequestBody @Valid UserDto user) {
 
-        var userExist = userService.findById(id);
+        Optional<User> userExist = userService.findById(id);
 
         if (!userExist.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
 
-        var newUser = userExist.get();
-        newUser.setName(user.getName());
-        newUser.setEmail(user.getEmail());
-        newUser.setTelefone(user.getTelefone());
+        // var userUpdated = userExist.get();
+        // userUpdated.setName(user.getName());
+        // userUpdated.setEmail(user.getEmail());
+        // userUpdated.setTelefone(user.getTelefone());
+
+        // FORMA ALTERNATIVA E MAIS SIMPLES DE FAZER:
+
+        var userModel = new User();
+        BeanUtils.copyProperties(user, userModel);
+        userModel.setId(userExist.get().getId());
+        userModel.setCreated_at(userExist.get().getCreated_at());
         
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(userService.save(newUser));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.save(userModel));
 
        
     }
 
     @DeleteMapping("/delete_user/{id}")
     public ResponseEntity<Object> deleteUser(@PathVariable("id") Long id){
-        var userExist = userService.findById(id);
+        Optional<User> userExist = userService.findById(id);
 
         if (!userExist.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
 
-        userService.deleteById(id);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Deleted");
+        userService.delete(userExist.get());
+        return ResponseEntity.status(HttpStatus.OK).body("Deleted");
         
 
         
